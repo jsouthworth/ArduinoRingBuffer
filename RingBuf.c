@@ -85,7 +85,7 @@ int RingBufAdd(RingBuf *self, const void *object)
 {
   int index;
   // Perform all atomic opertaions
-  RB_ATOMIC_START
+  ATOMIC()
   {
     index = self->next_end_index(self);
     //if not full
@@ -96,7 +96,6 @@ int RingBufAdd(RingBuf *self, const void *object)
       self->elements++;
     }
   }
-  RB_ATOMIC_END
 
   return index;
 }
@@ -106,13 +105,12 @@ void *RingBufPeek(RingBuf *self, unsigned int num)
 {
   void *ret = NULL;
   // Perform all atomic opertaions
-  RB_ATOMIC_START
+  ATOMIC()
   {
     //empty or out of bounds
     if (self->isEmpty(self) || num > self->elements - 1) ret = NULL;
     else ret = &self->buf[((self->start + num)%self->len)*self->size];
   }
-  RB_ATOMIC_END
 
   return ret;
 }
@@ -122,7 +120,7 @@ void *RingBufPull(RingBuf *self, void *object)
 {
   void *ret = NULL;
   // Perform all atomic opertaions
-  RB_ATOMIC_START
+  ATOMIC()
   {
     if (self->isEmpty(self)) ret = NULL;
     // Else copy Object
@@ -135,7 +133,6 @@ void *RingBufPull(RingBuf *self, void *object)
       ret = object;
     }
   }
-  RB_ATOMIC_END
 
   return ret;
 }
@@ -146,11 +143,10 @@ unsigned int RingBufNumElements(RingBuf *self)
   unsigned int elements;
 
   // Perform all atomic opertaions
-  RB_ATOMIC_START
+  ATOMIC()
   {
     elements = self->elements;
   }
-  RB_ATOMIC_END
 
   return elements;
 }
@@ -161,11 +157,10 @@ bool RingBufIsFull(RingBuf *self)
   bool ret;
 
   // Perform all atomic opertaions
-  RB_ATOMIC_START
+  ATOMIC()
   {
     ret = self->elements == self->len;
   }
-  RB_ATOMIC_END
 
   return ret;
 }
@@ -176,11 +171,10 @@ bool RingBufIsEmpty(RingBuf *self)
   bool ret;
 
   // Perform all atomic opertaions
-  RB_ATOMIC_START
+  ATOMIC()
   {
     ret = !self->elements;
   }
-  RB_ATOMIC_END
 
   return ret;
 }
